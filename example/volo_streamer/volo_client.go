@@ -15,9 +15,9 @@ import (
 	quic "github.com/lucas-clemente/quic-go"
 )
 
-const addr = "localhost:4242"
+const addr = "192.168.0.125:4242"
 
-const message = "Frame_00039_textured_hd_t_s_c.obj"
+const message = "loot_vox10_1000.ply"
 
 // We start a server echoing data on the first stream the client opens,
 // then connect with a client, send the message, and wait for its receipt.
