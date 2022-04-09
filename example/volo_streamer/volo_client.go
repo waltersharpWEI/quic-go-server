@@ -23,13 +23,13 @@ const message = "loot_vox10_1000.ply"
 // then connect with a client, send the message, and wait for its receipt.
 func main() {
 	//go func() { log.Fatal(echoServer()) }()
-	err := clientMain()
+	err := clientMain(message)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func clientMain() error {
+func clientMain(filename string) error {
 	tlsConf := &tls.Config{
 		InsecureSkipVerify: true,
 		NextProtos:         []string{"quic-echo-example"},
@@ -44,12 +44,12 @@ func clientMain() error {
 		return err
 	}
 
-	fmt.Printf("Client: Sending '%s'\n", message)
-	_, err = stream.Write([]byte(message))
+	fmt.Printf("Client: Sending '%s'\n", filename)
+	_, err = stream.Write([]byte(filename))
 	if err != nil {
 		return err
 	}
-	f, err := os.Create(message)
+	f, err := os.Create(filename)
 	if err != nil {
 		fmt.Println("1")
 		panic(err)

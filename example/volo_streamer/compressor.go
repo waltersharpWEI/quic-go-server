@@ -30,7 +30,7 @@ func GetFiles(dirPath string) (files []string, dirs []string, err error) {
 }
 
 func main() {
-	files, _, _ := GetFiles("objs")
+	files, _, _ := GetFiles("D:\\volumetric\\dataset\\8i\\loot\\Ply")
 	for _, file := range files {
 		fmt.Printf(file + "\n")
 		cmd := exec.Command("draco_encoder", "-i", file)

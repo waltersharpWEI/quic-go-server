@@ -11,13 +11,14 @@ import (
 	"io"
 	"math/big"
 	"os"
+	"time"
 
 	quic "github.com/lucas-clemente/quic-go"
 )
 
 const addr = "192.168.0.125:4242"
 
-const message = "loot_vox10_1000.ply"
+const message_example = "loot_vox10_1000.ply"
 
 // We start a server echoing data on the first stream the client opens,
 // then connect with a client, send the message, and wait for its receipt.
@@ -28,20 +29,19 @@ func main() {
 	}
 }
 
-// Start a server that echos all data on the first stream opened by the client
-func echoServer() error {
-	listener, err := quic.ListenAddr(addr, generateTLSConfig(), nil)
-	if err != nil {
-		return err
-	}
-	sess, err := listener.Accept(context.Background())
-	if err != nil {
-		return err
-	}
+func serveOne(sess quic.Session) error {
 	stream, err := sess.AcceptStream(context.Background())
 	if err != nil {
 		panic(err)
 	}
+
+	message := make([]byte, len(message_example))
+	_, err = io.ReadFull(stream, message)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Server: Got '%s'\n", message)
+
 	dirPath := "D:\\volumetric\\dataset\\8i\\loot\\Ply"
 	PthSep := string(os.PathSeparator)
 	filepath := dirPath + PthSep + string(message)
@@ -55,6 +55,24 @@ func echoServer() error {
 		panic(err)
 	}
 	fmt.Println(n)
+	time.Sleep(10)
+	sess.CloseWithError(200, "OK")
+	return err
+}
+
+// Start a server that echos all data on the first stream opened by the client
+func echoServer() error {
+	listener, err := quic.ListenAddr(addr, generateTLSConfig(), nil)
+	if err != nil {
+		return err
+	}
+	for {
+		sess, err := listener.Accept(context.Background())
+		if err != nil {
+			return err
+		}
+		go serveOne(sess)
+	}
 	return err
 }
 
