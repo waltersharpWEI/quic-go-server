@@ -16,7 +16,7 @@ import (
 	quic "github.com/lucas-clemente/quic-go"
 )
 
-const addr = "192.168.0.125:4242"
+const addr = "192.168.0.148:4242"
 
 const message_example = "loot_vox10_1000.ply"
 
@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 }
-
+//server one session
 func serveOne(sess quic.Session) error {
 	stream, err := sess.AcceptStream(context.Background())
 	if err != nil {
@@ -42,7 +42,7 @@ func serveOne(sess quic.Session) error {
 	}
 	fmt.Printf("Server: Got '%s'\n", message)
 
-	dirPath := "D:\\volumetric\\dataset\\8i\\loot\\Ply"
+	dirPath := "E:\\volumetric\\dataset\\8i\\loot\\Ply"
 	PthSep := string(os.PathSeparator)
 	filepath := dirPath + PthSep + string(message)
 	file, err := os.Open(filepath)
