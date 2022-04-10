@@ -11,7 +11,6 @@ import (
 	"io"
 	"math/big"
 	"os"
-	"time"
 	"strconv"
 
 	quic "github.com/lucas-clemente/quic-go"
