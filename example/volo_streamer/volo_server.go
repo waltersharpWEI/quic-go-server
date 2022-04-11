@@ -11,7 +11,7 @@ import (
 	"io"
 	"math/big"
 	"os"
-	"time"
+	"strconv"
 
 	quic "github.com/lucas-clemente/quic-go"
 )
@@ -23,10 +23,30 @@ const message_example = "loot_vox10_1000.ply"
 // We start a server echoing data on the first stream the client opens,
 // then connect with a client, send the message, and wait for its receipt.
 func main() {
-	err := echoServer()
+	err := dashServer()
 	if err != nil {
 		panic(err)
 	}
+}
+
+func get_content_length(path string) int64{
+	fi,err:=os.Stat(path)
+	if err ==nil {
+		fmt.Println("file size is ",fi.Size(),err)
+	}
+	return fi.Size()
+}
+//This function is to 'fill'
+func fillString(retunString string, toLength int) string {
+	for {
+		lengthString := len(retunString)
+		if lengthString < toLength {
+			retunString = retunString + ":"
+			continue
+		}
+		break
+	}
+	return retunString
 }
 //server one session
 func serveOne(sess quic.Session) error {
@@ -49,19 +69,23 @@ func serveOne(sess quic.Session) error {
 	if err != nil {
 		panic(err)
 	}
+	content_length := get_content_length(filepath)
+	content_length_str := fillString(strconv.FormatInt(content_length,10),10)
+	_, err = stream.Write([]byte(content_length_str))
+	if err != nil {
+		return err
+	}
 	n, err := io.Copy(stream, file)
 	if err != nil {
-		fmt.Println("1")
 		panic(err)
 	}
 	fmt.Println(n)
-	time.Sleep(10)
-	sess.CloseWithError(200, "OK")
+	//time.Sleep(10)
+	//sess.CloseWithError(200, "OK")
 	return err
 }
 
-// Start a server that echos all data on the first stream opened by the client
-func echoServer() error {
+func dashServer() error {
 	listener, err := quic.ListenAddr(addr, generateTLSConfig(), nil)
 	if err != nil {
 		return err
