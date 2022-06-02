@@ -18,7 +18,7 @@ import (
 
 const addr = "192.168.0.148:4242"
 
-const message_example = "loot_vox10_1000.ply"
+const message_example = "Mesh-F00001.ply"
 
 // We start a server echoing data on the first stream the client opens,
 // then connect with a client, send the message, and wait for its receipt.
@@ -49,20 +49,15 @@ func fillString(retunString string, toLength int) string {
 	return retunString
 }
 //server one session
-func serveOne(sess quic.Session) error {
-	stream, err := sess.AcceptStream(context.Background())
+func serveOne(stream quic.Stream) error {
+	message := make([]byte, len(message_example))
+	_, err := io.ReadFull(stream, message)
 	if err != nil {
 		panic(err)
 	}
-
-	message := make([]byte, len(message_example))
-	_, err = io.ReadFull(stream, message)
-	if err != nil {
-		return err
-	}
 	fmt.Printf("Server: Got '%s'\n", message)
 
-	dirPath := "E:\\volumetric\\dataset\\8i\\loot\\Ply"
+	dirPath := "E:\\volumetric\\dataset\\fvv\\BreakDancers\\TrackedMeshes"
 	PthSep := string(os.PathSeparator)
 	filepath := dirPath + PthSep + string(message)
 	file, err := os.Open(filepath)
@@ -73,13 +68,15 @@ func serveOne(sess quic.Session) error {
 	content_length_str := fillString(strconv.FormatInt(content_length,10),10)
 	_, err = stream.Write([]byte(content_length_str))
 	if err != nil {
-		return err
+		panic(err)
 	}
 	n, err := io.Copy(stream, file)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 	fmt.Println(n)
+	fmt.Println("stream closed")
 	//time.Sleep(10)
 	//sess.CloseWithError(200, "OK")
 	return err
@@ -90,12 +87,16 @@ func dashServer() error {
 	if err != nil {
 		return err
 	}
+	sess, err := listener.Accept(context.Background())
+	if err != nil {
+		return err
+	}
+	stream, err := sess.AcceptStream(context.Background())
+	if err != nil {
+		panic(err)
+	}
 	for {
-		sess, err := listener.Accept(context.Background())
-		if err != nil {
-			return err
-		}
-		go serveOne(sess)
+		serveOne(stream)
 	}
 	return err
 }
